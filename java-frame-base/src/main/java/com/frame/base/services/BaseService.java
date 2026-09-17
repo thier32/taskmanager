@@ -8,6 +8,7 @@ import com.frame.base.dto.PageResponse;
 import com.frame.base.model.BaseModel;
 import com.frame.base.repository.BaseRepository;
 import com.frame.base.security.RuntimeSecurityUtils;
+import com.frame.base.utils.DateUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.apache.catalina.security.SecurityUtil;
 import org.hibernate.Hibernate;
@@ -117,6 +118,7 @@ public class BaseService<T,R ,E,F extends BaseRepository<E,Long>> implements
         JsonUtils.convert(entityDto,single);
         if (single instanceof BaseModel){
             ((BaseModel) single).setUpdateByUserName(RuntimeSecurityUtils.getCurrentUsernameSafely());
+            ((BaseModel) single).setUpdatedAt(DateUtils.localDateTimeGmt());
         }
         E resultEntity = this.repository.save(single);
         return convertToResultDto(resultEntity);

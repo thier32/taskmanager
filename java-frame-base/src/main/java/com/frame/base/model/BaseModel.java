@@ -14,6 +14,8 @@ public class BaseModel {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     protected Long id;
 
+    public static final String CREATED_BY_USERNAME = "createdByUserName";
+    public static final String UPDATED_BY_USERNAME = "updatedByUserName";
 
     protected Long createdBy;
 
@@ -67,5 +69,14 @@ public class BaseModel {
     public BaseModel setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
         return this;
+    }
+
+    public BaseModel setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+        return this;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
