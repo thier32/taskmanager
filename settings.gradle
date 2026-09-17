@@ -1,0 +1,5 @@
+rootProject.name = 'taskmanager-app'
+include 'taskmanager-application'
+include 'taskmanager-management'
+include 'taskmanager-users'
+include 'java-frame-base'
