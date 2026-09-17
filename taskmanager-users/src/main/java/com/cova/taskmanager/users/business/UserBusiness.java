@@ -67,4 +67,5 @@ public class UserBusiness extends BaseBusiness<UserResultDto, UserCreateDto> {
         );
         return this.add(userCreateDto);
     }
+
 }

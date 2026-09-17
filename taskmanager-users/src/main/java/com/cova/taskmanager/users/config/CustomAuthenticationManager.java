@@ -47,13 +47,6 @@ public class CustomAuthenticationManager implements AuthenticationManager {
                 throw new TaskManagerUserAuthenticationException("Bad credentials");
         }
 
-//        UserDetails authUser =
-//                new AuthUser(
-//                        userCredentialsByUsername.userResponse().id(),
-//                        userCredentialsByUsername.userResponse().roles(),
-//                        userCredentialsByUsername.passwordHash());
-
-
         logger.info(String.format("Connexion Successfull %s", authentication.getName()));
         // if null would be returned, then another implementation of authentication provider,
         // that support given type of the authentication will be invoked

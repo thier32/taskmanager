@@ -1,5 +1,6 @@
 package com.cova.taskmanager.users.services.impl;
 
+import com.cova.taskmanager.users.config.exceptions.TaskManagerUserAuthenticationException;
 import com.cova.taskmanager.users.dto.user.UserDto;
 import com.cova.taskmanager.users.dto.user.UserResultDto;
 import com.cova.taskmanager.users.model.User;
@@ -40,4 +41,18 @@ public class UserService extends BaseService<
         return user;
     }
 
+    @Override
+    public User buildEntity(UserDto entityDto, User entity) {
+        User user = this.findSingle(Map.of(User.USER_USERNAME, entityDto.getUsername()));
+
+        if (user == null) {
+            user = this.findSingle(Map.of(User.USER_EMAIL, entityDto.getEmail()));
+        }
+
+        if (user != null) {
+            throw new TaskManagerUserAuthenticationException("User already exists");
+        }
+
+        return super.buildEntity(entityDto, entity);
+    }
 }
