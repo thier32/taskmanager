@@ -1,6 +1,7 @@
 package com.cova.taskmanager.users.config;
 
 import com.cova.taskmanager.users.config.exceptions.TaskManagerUserAuthenticationException;
+import com.cova.taskmanager.users.model.User;
 import com.cova.taskmanager.users.services.impl.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,21 +38,18 @@ public class CustomAuthenticationManager implements AuthenticationManager {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         logger.info(String.format("Connexion attempt of %s",authentication.getName()));
-        UserDetails userCredentialsByUsername =
-                userService.loadUserByUsername(authentication.getName());
-
-        if (!passwordEncoder.matches(
-                authentication.getCredentials().toString(), userCredentialsByUsername.getPassword())) {
-
+        User userCredentialsByUsername =
+                (User) userService.loadUserByUsername(authentication.getName());
+        if (userCredentialsByUsername == null) {
             logger.info(String.format("Bad Connexion attempt of %s",authentication.getName()));
-                throw new TaskManagerUserAuthenticationException("Bad credentials");
+            throw new TaskManagerUserAuthenticationException("Bad credentials");
         }
 
         logger.info(String.format("Connexion Successfull %s", authentication.getName()));
         // if null would be returned, then another implementation of authentication provider,
         // that support given type of the authentication will be invoked
         return new UsernamePasswordAuthenticationToken(
-                userCredentialsByUsername, authentication.getCredentials(), userCredentialsByUsername.getAuthorities());
+                userCredentialsByUsername.getUsername(), authentication.getCredentials(), userCredentialsByUsername.getAuthorities());
     }
 
 }

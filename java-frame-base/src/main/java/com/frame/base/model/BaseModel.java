@@ -1,5 +1,6 @@
 package com.frame.base.model;
 
+import com.frame.base.utils.DateUtils;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,15 +23,15 @@ public class BaseModel {
 
     protected Long updatedBy;
 
-    protected LocalDateTime createdAt = LocalDateTime.now();
+    protected LocalDateTime createdAt = DateUtils.localDateTimeGmt();;
 
-    protected LocalDateTime updatedAt = LocalDateTime.now();
+    protected LocalDateTime updatedAt = DateUtils.localDateTimeGmt();;
 
     public BaseModel() {
         if (id == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = DateUtils.localDateTimeGmt();
         }
-        updatedAt = LocalDateTime.now();
+        updatedAt = DateUtils.localDateTimeGmt();;
     }
 
     public Long getId() {

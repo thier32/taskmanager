@@ -30,10 +30,7 @@ public class User extends BaseModel implements UserDetails {
         private String email;
         private String password;
 
-        @Transient
-        private List<Role> roles = new ArrayList<>(10);
-
-        private List<String> rolesName = new ArrayList<>(10);
+        private List<String> roles = new ArrayList<>(10);
 
         @Enumerated(EnumType.STRING)
         private TaskStatus status = TaskStatus.CREATED;
@@ -43,7 +40,7 @@ public class User extends BaseModel implements UserDetails {
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
                 List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-                List<String> roles = getRolesName();
+                List<String> roles = getRoles();
                 if (roles != null){
                         roles.forEach(r -> grantedAuthorities.add(new SimpleGrantedAuthority(r)));
                 }
@@ -60,15 +57,20 @@ public class User extends BaseModel implements UserDetails {
         }
 
         @Override
-        public String getUsername() {
-                return "";
+        public String getUsername()
+        {
+                String username = this.username;
+                if (username == null || username.isEmpty()){
+                        username = this.email;
+                }
+                return username ;
         }
 
         public boolean hasRole(String role){
                 String prefix = "ROLE_";
                 String roleTemplate = prefix+"%s";
                 String rl = null;
-                List<String> roles = getRolesName();
+                List<String> roles = getRoles();
                 if (roles == null) roles = new ArrayList<>(0);
                 for(String rle : roles){
                         rl = rle;
@@ -82,7 +84,4 @@ public class User extends BaseModel implements UserDetails {
                 return  false;
         }
 
-        public List<String> getRolesName() {
-             return this.getRoles().stream().map(Role::getName).toList();
-        }
 }

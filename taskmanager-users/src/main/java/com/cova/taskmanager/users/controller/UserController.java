@@ -3,6 +3,7 @@ package com.cova.taskmanager.users.controller;
 import com.cova.taskmanager.users.business.UserBusiness;
 import com.cova.taskmanager.users.constant.SystemRoutes;
 import com.cova.taskmanager.users.dto.user.UserCreateDto;
+import com.cova.taskmanager.users.dto.user.UserDto;
 import com.cova.taskmanager.users.dto.user.UserLoginDto;
 import com.cova.taskmanager.users.dto.user.UserResultDto;
 import com.frame.base.controller.BaseController;
@@ -17,7 +18,7 @@ import static com.cova.taskmanager.users.constant.SystemRoutes.*;
 @RequestMapping(SystemRoutes.USERS_ROUTE)
 @CrossOrigin(origins = "*")
 @Tag(name = USERS_ROUTE_NAME)
-public class UserController extends BaseController<UserResultDto, UserCreateDto>
+public class UserController extends BaseController<UserResultDto, UserDto>
 {
     public UserController(UserBusiness userBusiness)
     {

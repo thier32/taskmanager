@@ -1,15 +1,18 @@
 package com.cova.taskmanager.users.dto.user;
 
+import java.util.List;
+
 public record UserCreateDto(
         String username,
         String password,
         String email,
-        String name
+        String name,
+        List<String> roles
 ) {
     public UserDto withId(Long newId) {
-        return new UserDto(newId, this.username, this.password, this.email);
+        return new UserDto(newId, this.username, this.password, this.email,this.roles);
     }
-    public UserCreateDto updatePassword(String newPassword) {
-        return new UserCreateDto(this.username, newPassword, this.email, this.name);
+    public UserDto updatePassword(String newPassword) {
+        return new UserDto(this.username, newPassword, this.email, this.name,this.roles);
     }
 }

@@ -4,6 +4,7 @@ import com.cova.taskmanager.users.business.UserBusiness;
 import com.cova.taskmanager.users.dto.user.UserCreateDto;
 import com.cova.taskmanager.users.dto.user.UserLoginDto;
 import com.frame.base.business.IBusiness;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ public class AuthController{
     }
 
     @PostMapping(USERS_LOGIN_ROUTE)
+    @SecurityRequirements
     public ResponseEntity $Auth(
             @RequestBody UserLoginDto entityDto) {
         return ResponseEntity.ok(((UserBusiness)this.business).login(entityDto));
@@ -32,6 +34,7 @@ public class AuthController{
 
 
     @PostMapping(USERS_REGISTER_ROUTE)
+    @SecurityRequirements
     public ResponseEntity $Register(
             @RequestBody UserCreateDto userCreateDto) {
         return ResponseEntity.ok(((UserBusiness)this.business).register(userCreateDto));

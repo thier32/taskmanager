@@ -32,7 +32,7 @@ public class SpecificationBuilder {
         boolean isEmbebed = false;
         String className = null;
         for (Map.Entry criterion : criteria.entrySet()){
-            if (criterion.getValue().toString().isEmpty()){
+            if (criterion.getValue() == null || criterion.getValue().toString().isEmpty()){
                 continue;
             }
             String fieldName = criterion.getKey().toString();

@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -43,16 +44,16 @@ public class UserFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //        UserService userService = new UserService();
-        System.out.println("Requête"+request);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if(SecurityContextHolder.getContext().getAuthentication() != null &&
-                SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
-                && !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
-        ){
-            if (request.isUserInRole("ROLE_ADMIN") && !request.getRequestURI().contains("/admin")){
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            // Apply admin restriction only when accessing secured business routes, not public auth routes
+            String requestURI = request.getRequestURI();
 
-                throw new BadCredentialsException("Invalids credentials");
+            if (request.isUserInRole("ROLE_ADMIN") && !requestURI.contains("/admin") && !requestURI.startsWith("/auth/")) {
+                // Send proper HTTP error response instead of throwing raw exception in filter chain
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin users are restricted to /admin routes");
+                return;
             }
         }
 

@@ -28,14 +28,14 @@ public class UserService extends BaseService<
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = this.findSingle(Map.of(User.USER_USERNAME, username));
+        User user = this.findSingle(Map.of(User.USER_USERNAME, username),false);
 
         if (user == null) {
-            user = this.findSingle(Map.of(User.USER_EMAIL, username));
+            user = this.findSingle(Map.of(User.USER_EMAIL, username),false);
         }
 
         if (user == null) {
-            throw new UsernameNotFoundException(username);
+            throw new TaskManagerUserAuthenticationException(String.format("User not found %s",username));
         }
 
         return user;
@@ -43,10 +43,10 @@ public class UserService extends BaseService<
 
     @Override
     public User buildEntity(UserDto entityDto, User entity) {
-        User user = this.findSingle(Map.of(User.USER_USERNAME, entityDto.getUsername()));
+        User user = this.findSingle(Map.of(User.USER_USERNAME, entityDto.getUsername()),false);
 
         if (user == null) {
-            user = this.findSingle(Map.of(User.USER_EMAIL, entityDto.getEmail()));
+            user = this.findSingle(Map.of(User.USER_EMAIL, entityDto.getEmail()),false);
         }
 
         if (user != null) {

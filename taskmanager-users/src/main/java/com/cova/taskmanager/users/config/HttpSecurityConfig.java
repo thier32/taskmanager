@@ -69,9 +69,10 @@ public class HttpSecurityConfig {
         this.userService = userService;
     }
 
+
     @Bean
-    public UserFilter userFilter(IUserService userService) {
-        return new UserFilter(userService);
+    public UserFilter userFilter() {
+        return new UserFilter(this.userService);
     }
 
     @Bean
@@ -84,8 +85,9 @@ public class HttpSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain securityApiFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/api/***","/auth/**")
+    public SecurityFilterChain securityApiFilterChain(HttpSecurity http, UserFilter userFilter
+    ,JWTAuthorizationFilter jwtAuthorizationFilter) throws Exception {
+        http.securityMatcher("/api/**","/auth/**")
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for REST APIs
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -95,15 +97,11 @@ public class HttpSecurityConfig {
                         .requestMatchers("/auth/**", "/api/public/**","/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-               // .authorizeHttpRequests(a ->
-               //         a.requestMatchers("/api/swagger-config","/v3/api-docs*/",
-               //                         "/v3/api-docs","/auth/login","/auth/register").permitAll()
-               //                 .anyRequest().authenticated()
-               //         )
                 .exceptionHandling((auth) -> {
                     auth.authenticationEntryPoint(apiAuthenticationErrEntrypoint);
                 })
-                .addFilterBefore(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(userFilter, JWTAuthorizationFilter.class)
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
@@ -111,8 +109,7 @@ public class HttpSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain securityWebFilterChain(HttpSecurity http,RememberMeServices rememberMeServices) throws Exception {
-        UserFilter userFilter = new UserFilter(userService);
+    public SecurityFilterChain securityWebFilterChain(HttpSecurity http, UserFilter userFilter,RememberMeServices rememberMeServices) throws Exception {
         http
 
                 .authorizeHttpRequests(auth -> auth

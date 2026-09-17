@@ -8,10 +8,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,14 +22,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@Component
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private static final String HEADER = "Authorization";
     private static final String PREFIX = "Bearer ";
 
-    // Secret key must be at least 256 bits (32 characters) for HS256 in JJWT 0.12.x
-    public static final String SECRET = "mySecretKeyWithAtLeast32CharactersLong123!";
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    // Must be at least 48 characters long for HS384 (384 bits)
+    @Value("${app.jwt.secret}")
+    public String SECRET;
+    //private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    }
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -68,7 +76,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 Claims claims = validateToken(jwtToken);
 
-                if (claims.get("authorities") != null) {
+                if (claims.get(JwtUtils.AUTHORITIES_KEY) != null) {
                     setUpSpringAuthentication(claims);
                 } else {
                     SecurityContextHolder.clearContext();
@@ -83,9 +91,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private Claims validateToken(String token) {
-        // Updated 0.12.x syntax: parser() -> verifyWith() -> build() -> parseSignedClaims()
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -93,7 +100,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private void setUpSpringAuthentication(Claims claims) {
         @SuppressWarnings("unchecked")
-        List<String> authorities = claims.get("authorities", List.class);
+        List<String> authorities = claims.get(JwtUtils.AUTHORITIES_KEY, List.class);
 
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
                 .map(SimpleGrantedAuthority::new)

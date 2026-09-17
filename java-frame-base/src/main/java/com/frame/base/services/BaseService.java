@@ -5,8 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.frame.base.criteria.SpecificationBuilder;
 import com.frame.base.dto.CriteriaClass;
 import com.frame.base.dto.PageResponse;
+import com.frame.base.model.BaseModel;
 import com.frame.base.repository.BaseRepository;
+import com.frame.base.security.RuntimeSecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.catalina.security.SecurityUtil;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,6 +61,9 @@ public class BaseService<T,R ,E,F extends BaseRepository<E,Long>> implements
         E entity = JsonUtils.parse(entityDto, this.entityClass);
         entity = buildEntity(entityDto, entity);
         entity = buildEntity(entity);
+        if (entity instanceof BaseModel){
+            ((BaseModel) entity).setCreatedByUserName(RuntimeSecurityUtils.getCurrentUsernameSafely());
+        }
         E resultEntity = saveEntity(entity);
         return convertToResultDto(resultEntity);
     }
@@ -109,6 +115,9 @@ public class BaseService<T,R ,E,F extends BaseRepository<E,Long>> implements
         Map<?,?> map = getMap(entityDto);
         E single = findSingle(map);
         JsonUtils.convert(entityDto,single);
+        if (single instanceof BaseModel){
+            ((BaseModel) single).setUpdateByUserName(RuntimeSecurityUtils.getCurrentUsernameSafely());
+        }
         E resultEntity = this.repository.save(single);
         return convertToResultDto(resultEntity);
     }
@@ -290,6 +299,9 @@ public class BaseService<T,R ,E,F extends BaseRepository<E,Long>> implements
     public E updateEntity(T entityDto) {
         Map<?,?> map = getMap(entityDto);
         E single = findSingle(map);
+        if (single instanceof BaseModel){
+            ((BaseModel) single).setUpdateByUserName(RuntimeSecurityUtils.getCurrentUsernameSafely());
+        }
         JsonUtils.convert(single, entityDto);
         return save(single);
     }

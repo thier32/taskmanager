@@ -1,34 +1,39 @@
 package com.cova.taskmanager.users.business;
 
 import com.cova.taskmanager.users.config.JwtUtils;
-import com.cova.taskmanager.users.dto.user.UserCreateDto;
-import com.cova.taskmanager.users.dto.user.UserLoginDto;
-import com.cova.taskmanager.users.dto.user.UserResultDto;
-import com.cova.taskmanager.users.dto.user.UserTokenResultDto;
+import com.cova.taskmanager.users.config.exceptions.TaskManagerUserAuthenticationException;
+import com.cova.taskmanager.users.dto.user.*;
+import com.cova.taskmanager.users.model.User;
 import com.cova.taskmanager.users.services.impl.UserService;
+import com.cova.taskmanager.users.utils.PasswordChecker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.frame.base.business.BaseBusiness;
 import com.frame.base.dto.ResponseDto;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class UserBusiness extends BaseBusiness<UserResultDto, UserCreateDto> {
+public class UserBusiness extends BaseBusiness<UserResultDto, UserDto> {
 
     private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
 
-    public UserBusiness(UserService userService, ObjectMapper objectMapper, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder)
+
+    public UserBusiness(UserService userService, ObjectMapper objectMapper, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder
+    )
     {
         super(userService);
         this.objectMapper = objectMapper;
@@ -39,12 +44,17 @@ public class UserBusiness extends BaseBusiness<UserResultDto, UserCreateDto> {
 
     public ResponseDto login(UserLoginDto loginDto){
         Map<String, Object> map = objectMapper.convertValue(loginDto, Map.class);
-        UserResultDto userResultDto = (UserResultDto) this.IService.findDetail(map);
+        User user = (User)((UserService)this.IService).loadUserByUsername(loginDto.username());
+
+        if (!this.passwordEncoder.matches(loginDto.password(),user.getPassword())){
+            throw new BadCredentialsException("Bad credentials");
+        }
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        userResultDto.name(),
-                        loginDto.password()
+                        user.getUsername(),
+                        user.getPassword(),
+                        user.getAuthorities()
                 )
         );
 
@@ -55,17 +65,25 @@ public class UserBusiness extends BaseBusiness<UserResultDto, UserCreateDto> {
         String token = jwtUtils.generateToken(authentication);
 
         UserTokenResultDto userTokenResultDto = new UserTokenResultDto(
-                userResultDto.name(),userResultDto.email(),new ArrayList<>(10),
+                user.getUsername(),user.getEmail(),user.getRoles(),
                token
         );
         return buildResponseDto(userTokenResultDto);
     }
 
     public ResponseDto register(UserCreateDto userCreateDto){
-        userCreateDto = userCreateDto.updatePassword(
+
+        List<String> passwordRequirements = PasswordChecker.evaluate(userCreateDto.password()).missingRequirements();
+        if(!passwordRequirements.isEmpty()){
+            throw new TaskManagerUserAuthenticationException(
+                passwordRequirements.toString()
+            );
+        }
+
+        UserDto userDto = userCreateDto.updatePassword(
                 this.passwordEncoder.encode(userCreateDto.password())
         );
-        return this.add(userCreateDto);
+        return this.add(userDto);
     }
 
 }
