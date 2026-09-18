@@ -23,6 +23,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	//runtimeOnly 'com.h2database:h2'
 	implementation 'com.mysql:mysql-connector-j'
+	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation project(':taskmanager-management')
 	annotationProcessor 'org.projectlombok:lombok'
 	testCompileOnly 'org.projectlombok:lombok'

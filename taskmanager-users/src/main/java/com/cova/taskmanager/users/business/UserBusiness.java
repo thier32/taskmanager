@@ -73,7 +73,7 @@ public class UserBusiness extends BaseBusiness<UserResultDto, UserDto> {
 
     public ResponseDto register(UserCreateDto userCreateDto){
 
-        if (!userCreateDto.password().equals(userCreateDate.confirmPassword())){
+        if (!userCreateDto.password().equals(userCreateDto.confirmPassword())){
              throw new TaskManagerUserAuthenticationException(
                 "Password and confirm password must be the same"
             );   
