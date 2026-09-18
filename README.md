@@ -122,10 +122,12 @@ docker build -t taskmanager .
 Démarrer l'API :
 
 ```powershell
-docker run --rm -p 8091:8091 taskmanager
+docker run --rm -p 6001:8091 taskmanager
 ```
 
-L'API est alors disponible sur `http://localhost:8091`. Le port `8091` du conteneur est publié sur le même port de la machine hôte.
+L'API est alors disponible sur `http://localhost:6001` `http://127.0.0.1:6001`. Le port `8091` du conteneur est publié sur le port 6001 de la machine hôte.
+
+L'API doc est alors disponible sur `http://localhost:6001/swagger-ui/index.html` `http://127.0.0.1:6001/swagger-ui/index.html`.
 
 Le conteneur utilise la configuration MySQL de l'application (`host.docker.internal:3306`, base `task`). MySQL doit donc être démarré et accessible depuis Docker avant le lancement de l'API. Le conteneur Task Manager ne lance pas lui-même MySQL et ne persiste pas de données localement.
 
