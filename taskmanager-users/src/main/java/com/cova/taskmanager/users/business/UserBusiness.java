@@ -73,6 +73,12 @@ public class UserBusiness extends BaseBusiness<UserResultDto, UserDto> {
 
     public ResponseDto register(UserCreateDto userCreateDto){
 
+        if (!userCreateDto.password().equals(userCreateDate.confirmPassword())){
+             throw new TaskManagerUserAuthenticationException(
+                "Password and confirm password must be the same"
+            );   
+        }
+
         List<String> passwordRequirements = PasswordChecker.evaluate(userCreateDto.password()).missingRequirements();
         if(!passwordRequirements.isEmpty()){
             throw new TaskManagerUserAuthenticationException(

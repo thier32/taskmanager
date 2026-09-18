@@ -5,6 +5,7 @@ import java.util.List;
 public record UserCreateDto(
         String username,
         String password,
+        String confirmPassword,
         String email,
         String name,
         List<String> roles
